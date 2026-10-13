@@ -1,0 +1,16 @@
+Tarea 6: Análisis Forense Post-Mortem de Bloqueo Masivo en Producción (OmniBank)
+
+1.-La Raíz Computacional (El Bloqueo Exclusivo):
+El colapso de 14 minutos ocurrió porque al ejecutar la sentencia ALTER TABLE con un CHECK convencional, PostgreSQL adquiere de inmediato un AccessExclusiveLock, el nivel de bloqueo más restrictivo que existe en el motor de base de datos. Este bloqueo paraliza por completo cualquier intento de lectura, escritura o inserción concurrente proveniente de la aplicación móvil o cajeros. La causa técnica de la congelación fue que el motor se vio obligado a escanear consecutivamente y una a una las 75 millones de filas históricas en el disco duro para verificar que cumplieran con la nueva condición, bloqueando la tabla entera hasta terminar.
+
+2.-El Patrón Arquitectónico de Solución en Dos Fases (NOT VALID):
+Para ejecutar migraciones de DDL en caliente sin interrumpir el servicio (Zero-Downtime), se implementa una estrategia obligatoria dividida en dos etapas para evitar el bloqueo exclusivo prolongado
+Paso 1: Adición sin bloqueo de escaneo (NOT VALID):
+Se añade la restricción ordenando expresamente al motor que proteja solo el tráfico futuro sin verificar el pasado masivo de golpe.
+ALTER TABLE core.transactions 
+    ADD CONSTRAINT chk_transactions_description_valid 
+    CHECK (LENGTH(TRIM(description)) >= 5) NOT VALID;
+Paso 2: La Validación Pasiva Posterior (VALIDATE CONSTRAINT): 
+En una orden asíncrona posterior, se instruye al motor validar las filas viejas en segundo plano reteniendo únicamente un bloqueo leve compartido (ShareUpdateExclusiveLock), lo que permite que las consultas y operaciones del tráfico real continúen operando sin interrupciones.
+ALTER TABLE core.transactions 
+    VALIDATE CONSTRAINT chk_transactions_description_valid;
