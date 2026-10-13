@@ -1,0 +1,79 @@
+Tarea 6: Análisis Forense Post-Mortem de Bloqueo Masivo en Producción (OmniBank)
+
+1.-La Raíz Computacional (El Bloqueo Exclusivo):
+El colapso de 14 minutos ocurrió porque al ejecutar la sentencia ALTER TABLE con un CHECK convencional, PostgreSQL adquiere de inmediato un AccessExclusiveLock, el nivel de bloqueo más restrictivo que existe en el motor de base de datos. Este bloqueo paraliza por completo cualquier intento de lectura, escritura o inserción concurrente proveniente de la aplicación móvil o cajeros. La causa técnica de la congelación fue que el motor se vio obligado a escanear consecutivamente y una a una las 75 millones de filas históricas en el disco duro para verificar que cumplieran con la nueva condición, bloqueando la tabla entera hasta terminar.
+
+2.-El Patrón Arquitectónico de Solución en Dos Fases (NOT VALID):
+Para ejecutar migraciones de DDL en caliente sin interrumpir el servicio (Zero-Downtime), se implementa una estrategia obligatoria dividida en dos etapas para evitar el bloqueo exclusivo prolongado
+Paso 1: Adición sin bloqueo de escaneo (NOT VALID):
+Se añade la restricción ordenando expresamente al motor que proteja solo el tráfico futuro sin verificar el pasado masivo de golpe.
+ALTER TABLE core.transactions 
+    ADD CONSTRAINT chk_transactions_description_valid 
+    CHECK (LENGTH(TRIM(description)) >= 5) NOT VALID;
+Paso 2: La Validación Pasiva Posterior (VALIDATE CONSTRAINT): 
+En una orden asíncrona posterior, se instruye al motor validar las filas viejas en segundo plano reteniendo únicamente un bloqueo leve compartido (ShareUpdateExclusiveLock), lo que permite que las consultas y operaciones del tráfico real continúen operando sin interrupciones.
+ALTER TABLE core.transactions 
+    VALIDATE CONSTRAINT chk_transactions_description_valid;
+
+
+Lo que aprendi:Revisé la técnica para actualizar bases de datos grandes siguiendo la 
+pauta del profesor para no saturar las transacciones.  
+
+Fix: # Day 06 Answer Key — Análisis Forense Post-Mortem de Bloqueo Masivo en Producción (OmniBank)
+
+## Expected Result
+El estudiante entregará un reporte forense post-mortem comprensivo en el que expone la causa raíz del congelamiento transaccional de 14 minutos en OmniBank, diagnosticando la intrusión mortífera provocada por el bloqueo computacional `AccessExclusiveLock`, e ilustrando con código real y modular la solución definitiva e industrializable de aplicación en dos fases para entornos de altísima concurrencia relacional (`NOT VALID` y la posterior orden independiente `VALIDATE CONSTRAINT`).
+
+---
+
+## Reference Solution
+
+### 1. Diagnóstico de Causa Raíz Computacional (`AccessExclusiveLock`)
+El incidente inaceptable en producción fue desencadenado directamente por un desconocimiento operativo y del motor en transiciones en caliente del DBA senior. Cuando se ejecuta un mandato directo `ADD CONSTRAINT ... CHECK (...)` sobre una entidad que alberga ya transaccionadas en disco duro en vivacidad continua 75 millones de filas:
+
+PostgreSQL se ve obligado irremediablemente a paralizar y detener las operaciones en esa tabla para garantizar una fotografía y certidumbre relacional intacta de los datos en tanto procede al escaneo secuencial e indexado computacional, revisando renglón a renglón todo su gigantesco volumen (las 75 millones de celdas transaccionales) para constatar que ninguna anterior al mediodía infrinja el largo del texto requerido ni en un solo carácter.
+
+Para hacer eso en un motor ácido consistente, adquirió irrebatiblemente un bloqueo de nivel absoluto del sistema: un `AccessExclusiveLock`.
+
+Este es el único bloqueo y de máxima gravedad en PostgreSQL que le cierra tajantemente las puertas de cara tanto a consultas entrantes de lectura (`SELECT`) como a transacciones operativas entrantes de modificación o inserción bancarias (`INSERT` / `UPDATE`). Durante 14 largos minutos todo intento computacional por acceder fue puesto a la fila o cola escurrido por agotamiento transaccional o cortado sistemáticamente al transcurrir el timeout de conexión en los microservicios externos de banca web y móvil (`Error 504 Gateway Timeout`).
+
+### 2. Solución Empresarial en Dos Etapas para Despliegues Sin Interrupción (Zero-Downtime Migration)
+Para blindar nuestras tablas en entornos intensivos productivos y dar carpetazo definitivo a esta clase de cataclismos operativos, establecemos el siguiente estándar procedimental e industrial en dos tiempos imperativo para el equipo de OmniBank:
+
+```sql
+-- ETAPA 1: Inyección transaccional en caliente sin escaneo retrógrado de bloqueo inquebrantable
+-- Le informamos explícitamente a PostgreSQL la cláusula "NOT VALID"
+ALTER TABLE core.transactions 
+    ADD CONSTRAINT chk_transactions_description_valid 
+    CHECK (LENGTH(TRIM(description)) >= 5) NOT VALID;
+
+-- > ¡TERMINADO EN MENOS DE 10 MILISEGUNDOS!
+-- El motor inserta pacíficamente la regla en los metadatos del catálogo en un parpadeo de tiempo, 
+-- aplicando instantáneamente la protección sobre CUALQUIER transaccionalidad NUEVA QUE LLEGUE EN EL FUTURO (INSERT/UPDATE)
+-- sin molestarse, escanear ni estorbar a las 75 millones de filas antiguas consolidadas y en sosiego en el disco.
+```
+
+```sql
+-- ETAPA 2: Validación Asíncrona Pasiva sin Caídas de Servicio ni bloqueos masivos
+-- En una sesión o mandato posterior (ideal para ventanas de bajamar operante, o inmediatamente después de la primera)
+ALTER TABLE core.transactions 
+    VALIDATE CONSTRAINT chk_transactions_description_valid;
+
+-- > ¡CERO CAÍDA TRANSACCIONAL PARA LOS CLIENTES NI CONGELAMIENTOS EN BANCA WEB!
+-- Al ejecutarse en su segunda fase con VALIDATE CONSTRAINT, PostgreSQL efectúa paulatinamente en segundo plano
+-- la inspección y escaneo y fiscalización gradual del histórico de los 75 millones de renglones anticuados.
+-- En este ciclo especial y genial de PostgreSQL, el motor SE ABSTIENE RÍGIDAMENTE Y RENUNCIA al terrible bloqueo AccessExclusiveLock;
+-- adopta únicamente un bloqueo muchísimo más ligero y amigable (ShareUpdateExclusiveLock), que PERMITE Y CONSENTIDA EN CONTINUIDAD
+-- Y EN REAL TIME LA EJECUCIÓN PACÍFICA DE SELECTS E INSERCIONES operativas de los millones de clientes y del mundo entero concurrente sin inyectar latencias ni cortes transaccionales al banco.
+```
+
+---
+
+## Common Valid Variations
+Subrayar complementariamente y con notable pertinencia que de ser previsible un volumen inabarcable en tabla histórica o inmanente de miles de millones de comprobantes (como una base bancaria consolidada con un lustro de antigüedad), para esta clase de evoluciones DDL pesadas el equipo debería coordinarse de inmediato a favor del paradigma arquitectónico y super-profesional de **Tablas Particionadas por Rangos y Años (Table Partitioning)**, lo que nos posibilitaría atomizar y procesar de forma ultra selectiva este tipo de migraciones de uno por uno en sus bloques del tiempo aislados, demostrando un altísimo nivel computacional en su argumentación teórica.
+
+---
+
+## Common Mistakes
+1. **Atribuir infundada y esotéricamente** la caída operacional en disco a una supuesta falta momentánea de memoria RAM en el servidor de AWS RDS o a un ataque externo errático: Pasar por alto en el RCA que se trató estrictamente del fenómeno intrínseco de concurrencia incesante encarnado y derivado del bloqueo `AccessExclusiveLock` de PostgreSQL invalida por descuido el verdadero diagnóstico estructural del problema transaccional.
+2. **Sostener ingenuamente** que bastaba con haber ejecutado la sentencia en un horario nocturno convencional: Si bien acoger una ventana nocturna aminora las cifras de usuarios perjudicados en el país natal del banco, ¡en un banco con visión global con presencia y clientes operacionales distribuidos internacionalmente una paralización inminente de catorce minutos completos en madrugada continuará y seguirá traduciéndose invariablemente como un fallo operativo inexcusable por insolvencia en la migración de esquemas en caliente sin dosificar en las 2 etapas descritas por las normas empresariales contemporáneas!
