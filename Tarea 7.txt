@@ -1,0 +1,18 @@
+Tarea 7: Sincronización Resiliente del Pipeline KYC con Escrituras Idempotentes (`UPSERT`)
+
+1.-El Análisis Crítico del Anti-Patrón "Read-Before-Write":
+El impacto en rendimiento y latencia:
+Utilizar bucles en la capa de aplicación que ejecutan un SELECT previo seguido de un INSERT o UPDATE (Read-Before-Write) duplica innecesariamente los viajes de red (Round-Trips) entre el microservicio y la base de datos. Procesar un lote masivo de 1 millón de registros bajo esta lógica lineal colapsa el rendimiento y eleva el tiempo de ejecución a horas innecesarias.
+
+El peligro de las condiciones de carrera (Race Conditions):
+En entornos de alta concurrencia con múltiples servidores ejecutando procesos paralelos, dos microservicios pueden evaluar el SELECT en el mismo milisegundo, confirmar erróneamente que un cliente no existe, e intentar disparar un INSERT simultáneo. Esto detona una colisión violenta contra la restricción de unicidad (Unique Constraint) en el correo electrónico, abortando la transacción y rompiendo la estabilidad del pipeline. La gestión de duplicados debe delegarse de forma atómica al motor de base de datos.
+
+2.-La Solución Definitiva: El Comando Idempotente de Alta Densidad (UPSERT):
+INSERT INTO core.customers (customer_id, first_name, last_name, email, phone_number, tax_id, date_of_birth)
+VALUES (gen_random_uuid(), 'Carlos', 'Pérez', 'carlos.perez@email.com', '555-9999', 'TAX-999', '1992-05-15')
+ON CONFLICT (email) 
+DO UPDATE SET 
+    first_name = EXCLUDED.first_name,
+    last_name = EXCLUDED.last_name,
+    phone_number = EXCLUDED.phone_number
+RETURNING customer_id, email;
