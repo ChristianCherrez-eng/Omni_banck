@@ -1,0 +1,26 @@
+Tarea 2: Refinamiento del ERD de OmniBank
+
+1.-Agrega los atributos de seguridad: Incluye en la tabla Clientes el campo necesario para el borrado lógico, y en la tabla Cuentas el campo para la auditoría de tiempo.
+
+2.-Define el tipo de dato de las llaves: Añade una nota o marca en tu diagrama indicando qué tipo de dato específico usarás para todas las llaves primarias (PK) de tu modelo para satisfacer el requerimiento del equipo Backend.
+
+3.-Agrega los Constraints: Anota al lado de los atributos correspondientes las reglas de negocio (ej. "No puede ser negativo", "Debe ser único").
+
+Cliente
+id -> PK, UUID, obligatorio, unico
+nombre -> Solo letras, obligatorio
+email -> Obligatorio, unico
+telefono -> Opcional
+deleted_at -> Opcional (para borrado logico)
+Cuenta
+id -> PK, UUID, obligatorio, unico
+cliente_id -> FK, UUID, obligatorio
+numero_cuenta -> Obligatorio, unico
+saldo -> Obligatorio, no puede ser negativo
+updated_at -> Obligatorio (fecha/hora de actualizacion)
+Transaccion
+id -> PK, UUID, obligatorio, unico
+cuenta_origen_id -> FK, UUID, obligatorio
+cuenta_destino_id -> FK, UUID, obligatorio
+monto -> Obligatorio, debe ser mayor a cero
+created_at -> Obligatorio (fecha/hora de creacion)
