@@ -1,0 +1,23 @@
+Actividad 6: Evolucionando el Core Bancario OmniBank con Migraciones DDL Seguras
+
+1.-La Declaración y el Bloque Transaccional de Hierro:
+CREATE TYPE core.loan_status_enum AS ENUM('ACTIVE','PAID','DEFAULTED','CANCELLED');
+
+2.-Alterando a los Titulares Bancarios (core.customers):
+BEGIN;
+
+3.-Alterando Cuentas para Estándar Internacional (core.accounts):
+AITER TABLE core.customers
+ADD COLUMN credit_score INT,
+ADD CONSTRAINT chk_customers_credit_sacore_range CHECK(credit_sacore BETWEEN 300 AND 850);
+
+4.-Transformando Columnas y Tipos al Vuelo (core.loans):
+ALTER TABLE core.accounts
+ADD COLUMN iban VARCHAR(34) NULL,
+ADD CONSTRAINT uq_accounts_iban UNIQUE (iban);
+
+5.-Cierre e Inspección Profesional del Bloque:
+ALTER TABLE core.loans
+ALTER COLUMN status TYPE core.loan_stayus_enum
+USING status::core.loan_status_enum;
+COMMIT;
