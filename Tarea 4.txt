@@ -1,0 +1,38 @@
+Tarea 4: Diseño de Dominios Customizados para Protección Financiera en OmniBank
+
+1.-El Dominio Monetario Bancario:
+
+CREATE DOMAIN monto_financiero AS NUMERIC (15,2) CHECK (VALUÉ >=0)
+
+
+2.-El Dominio de Identificación Fiscal / Cadena No Vacía:
+
+CREATE DOMAIN texto_obligatorio AS VARCHART(100) CHECK (VALUÉ <>’’ AND LENGTH(TRIM (VALUE))>0);
+
+Lo que aprendi:  Agregué los candados de validación tal como lo planteaba la solución 
+del profe para bloquear de inmediato datos vacíos.  
+
+
+Fix: # Day 04 Answer Key — Diseño de Dominios Customizados para Protección Financiera en OmniBank
+
+## Expected Result
+
+El estudiante confeccionará sin errores sintácticos de PostgreSQL dos scripts independientes para inicializar los `DOMAIN`s empresariales ordenados (`monto_financiero` y `texto_obligatorio`) garantizando las comprobaciones algebraicas y de limpieza textual por defecto mediante cláusulas de constraint (`CHECK`).
+
+## Reference Solution
+
+### 1. Script SQL para Dominios Bancarios de OmniBank
+
+```sql
+-- Declaración del Dominio para blindaje monetario universal
+CREATE DOMAIN monto_financiero AS NUMERIC(15, 2)
+    CHECK (VALUE >= 0.00);
+
+-- Declaración del Dominio para textos que repelen espacios en blanco o cadenas vacías ilegales
+CREATE DOMAIN texto_obligatorio AS VARCHAR(100)
+    CHECK (VALUE <> '' AND LENGTH(TRIM(VALUE)) > 0);
+```
+
+### 2. Identificación Transversal en Columnas
+
+El Dominio `monto_financiero` impactará positivamente y reemplazará al tipo nativo en al menos estas 3 columnas decisivas de nuestra arquitectura bancaria:
