@@ -1,0 +1,33 @@
+Actividad 1: Levantamiento de Requisitos de OmniBank
+
+1.-Identifica las Entidades: Lista los sustantivos principales que representan objetos del mundo real que debemos almacenar (Ejemplo: Clientes, ...).
+
+Transacciones, Clientes, Cuentas
+
+2.-Extrae los Requerimientos Funcionales (RF): Escribe al menos 3 requerimientos que dicten qué información exacta debe guardar cada entidad identificada.
+
+Transacciones:
+RF1: De que tipo de cuenta sale el dinero y a cual va.
+RF2: Registrar el monto que se envia
+PF3: El tipo de transacción (Deposito, Retiro, Transferencia).
+RF4: Fecha exacta en la que se completo el movimiento.
+Clientes
+RF1: Nombre completo
+RF2: Correo electronico unico
+RF3: Numero de teléfono
+RF4. Fecha de nacimiento
+R75. Número de identificación fiscal (TAX ID)
+Cuenta:
+RF1: Número de cuenta
+RF2: El tipo de moneda (ej. USD, EUR) 
+RF3: El tipo de cuenta (Checkag, Savings, Credit).
+RF4: El saldo actual
+RF5: El límite de crédito
+
+
+3.-Extrae Restricciones Clave: Identifica qué campo del cliente debe ser matemáticamente único en la base de datos según el texto.
+
+Coreo electonico
+Número de identifcacion fiscal (TAx ID)
+Número de cuenta
+
