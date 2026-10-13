@@ -1,0 +1,41 @@
+Tarea 3: Análisis de Dependencias Transitivas y Optimización Consciente en OmniBank
+
+1.-Evaluación de la Teoría: ¿Tiene razón el auditor de que una columna de saldo calculado es técnicamente un dato derivado/redundante según la teoría estricta de normalización pura?
+
+Aunque el auditor tiene razón teórica en la práctica  calcular el saldo con SUM(monto) en cada consulta destruye los NFRs de rendimiento
+
+2.-El Problema del Rendimiento (La Justificación del Mundo Real): Imagina que un cliente comercial masivo tiene un historial continuo de 250,000 transacciones acumuladas a lo largo de 5 años. ¿Qué sucedería con la CPU y los tiempos de latencia (milisegundos) del servidor de PostgreSQL si calculáramos el saldo desde cero (SUM()) en cada solicitud del frontend (infracciones a NFRs de rendimiento)?
+
+Con 250,000 registros un SUM() requería escaneo intensivo de disco CPU en postgresSQL elevando la latencia de 10ms a varios segundos y colapsando la app por consulta 
+
+3.-¿Por qué en la banca de grado empresarial mantenemos deliberadamente el campo saldo_actual como una desnormalización controlada, y cómo se protegerá para no caer en inconsistencias con el historial transaccional en el futuro (pista: bloqueos transaccionales y triggers ACID)?
+
+Se mantiene saldo actual para lectura en 0(1)(<1ms)
+
+
+Lo que aprendi: Comprobé que el enfoque del profesor sobre el manejo de saldos 
+calculados vs guardados era clave para optimizar el rendimiento del sistema. 
+
+
+Fix:# Day 03 Answer Key — Análisis de Dependencias Transitivas y Optimización Consciente en OmniBank
+
+## Expected Result
+El estudiante emitirá un dictamen arquitectónico comprensivo que reconoce que la columna `saldo_actual` es, en estricto rigor purista, un dato derivado (y por tanto infractor técnico de la 3NF canónica), pero argumentando sólidamente su conservación y permanencia obligada como una desnormalización controlada de grado empresarial motivada por necesidades extremas de rendimiento (OLTP).
+
+## Reference Solution
+
+### 1. Respuesta al Auditor (Evaluación Teórica)
+El auditor junior tiene la razón desde una perspectiva puramente académica y teórica de normalización. En una base de datos en 3NF estricta y absoluta, no se deberían almacenar valores derivados que puedan calcularse a partir de otros campos transaccionales (como sería un `SUM(monto)` del historial), dado que se añade riesgo de inconsistencia al duplicar o derivar estados sin dependencia funcional directa indivisible.
+
+### 2. Dictamen de Arquitectura (La Realidad del Rendimiento Empresarial - OLTP)
+En sistemas bancarios o comerciales de escala empresarial con volúmenes intensivos, calcular el saldo al vuelo (`SUM(monto)`) cada vez que un usuario consulta un ATM, hace un pago en un punto de venta (POS), o abre su aplicación bancaria generaría los siguientes problemas catastróficos:
+* **Colapso del CPU e I/O de disco:** Escanear e indexar 250,000 filas por consulta masiva (incluso en memoria con Índices) destruiría por completo el tiempo de respuesta del servidor relacional al escalar a millones de cuentas concurrentes (fallando los NFRs de latencia < 10ms).
+* **Incapacidad de bloqueo rápido para salvedades concurrentes:** Al transferir dinero es imperativo verificar inmediatamente en microsegundos que `saldo_actual >= monto_a_retirar` sin latencias de agregación previa que induzcan a condiciones de carrera transaccional o fraudes por desajustes de concurrencia temporal.
+* **Solución y Mitigación Empresarial:** Mantenemos `saldo_actual` como una desnormalización controlada. Para evitar que este saldo se desajuste en relación con las filas reales de Transacciones, delegamos al motor PostgreSQL la exigencia estricta de actualizar el saldo única y exclusivamente mediante Procedimientos Almacenados atómicos o Triggers transaccionales blindados bajo propiedades ACID con bloqueos de fila (`FOR UPDATE`), prohibiendo alteraciones manuales en la tabla o el cálculo errante en la capa del Frontend.
+
+## Common Valid Variations
+* Los alumnos pueden argumentar que para optimizaciones analíticas extremadamente masivas con billones de filas también se podrían utilizar Vistas Materializadas (`MATERIALIZED VIEWS`) en lugar de columnas estáticas directas, aunque aceptando que estas conllevan retardos en refrescos en tiempo real intolerables para cajeros ATM (consistencia eventual vs fuerte).
+
+## Common Mistakes
+* **Negar el argumento teórico:** Afirmar categóricamente que el auditor está mintiendo y que un saldo es un dato "primitivo y no derivado" sin reconocer que por álgebra transaccional su valor sí se compone por el flujo histórico de ingresos y egresos.
+* **Optar por eliminar la columna en aras de la pureza 3NF sin pensar en la escalabilidad del mundo real:** Esta es la trampa académica más peligrosa en entrevistas técnicas y diseño empresarial: descuidar por completo los cuellos de botella del CPU del servidor de datos al modelar ciegamente bajo dogmas universitarios inflexibles.
