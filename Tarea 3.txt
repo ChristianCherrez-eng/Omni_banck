@@ -1,0 +1,13 @@
+Tarea 3: Análisis de Dependencias Transitivas y Optimización Consciente en OmniBank
+
+1.-Evaluación de la Teoría: ¿Tiene razón el auditor de que una columna de saldo calculado es técnicamente un dato derivado/redundante según la teoría estricta de normalización pura?
+
+Aunque el auditor tiene razón teórica en la práctica  calcular el saldo con SUM(monto) en cada consulta destruye los NFRs de rendimiento
+
+2.-El Problema del Rendimiento (La Justificación del Mundo Real): Imagina que un cliente comercial masivo tiene un historial continuo de 250,000 transacciones acumuladas a lo largo de 5 años. ¿Qué sucedería con la CPU y los tiempos de latencia (milisegundos) del servidor de PostgreSQL si calculáramos el saldo desde cero (SUM()) en cada solicitud del frontend (infracciones a NFRs de rendimiento)?
+
+Con 250,000 registros un SUM() requería escaneo intensivo de disco CPU en postgresSQL elevando la latencia de 10ms a varios segundos y colapsando la app por consulta 
+
+3.-¿Por qué en la banca de grado empresarial mantenemos deliberadamente el campo saldo_actual como una desnormalización controlada, y cómo se protegerá para no caer en inconsistencias con el historial transaccional en el futuro (pista: bloqueos transaccionales y triggers ACID)?
+
+Se mantiene saldo actual para lectura en 0(1)(<1ms)
