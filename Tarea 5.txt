@@ -1,0 +1,34 @@
+Tarea 5: Dictamen y Defensa de Políticas de Integridad Referencial en OmniBank
+
+1.-La Catástrofe Empresarial en Producción:
+Habilitar un mandato destructivo como ON DELETE CASCADE en el core bancario representa un peligro existencial e ilegal. Un error humano, un acceso no autorizado o una orden de eliminación accidental de un titular (por ejemplo, al depurar registros transitorios) provocaría una reacción en cadena automatizada que borraría de manera irreversible todas sus cuentas, créditos y transacciones financieras en milisegundos, colapsando la estabilidad operativa de la institución.
+
+2.-El Rastro Fiscal y Auditoría Contable Inalienable:
+Por mandatos de regulación fiscal internacional y auditoría (como SOX o normativas de Hacienda), los registros dentro de tablas financieras como core.transactions jamás deben ser borrados físicamente mediante un comando DELETE. Incluso cuando un cliente cancela formalmente su relación mercantil, la ley exige inmutabilidad contable y un rastro histórico inalterable para respaldar auditorías, trazabilidad de fondos y obligaciones fiscales.
+
+3.-El Estándar de la Baja Lógica (La Alternativa Correcta):
+Ante el cierre de cuentas o la salida de un cliente, el sistema jamás debe alterar ni eliminar filas del histórico. En su lugar, se aplica estrictamente el estándar de baja lógica utilizando el atributo no funcional transaccional previsto en el diseño del DDL: modificar el indicador booleano is_active = false (o marcas de estado cerrado) dentro de las tablas de catálogo, blindando la integridad referencial con ON DELETE RESTRICT y protegiendo cada celda financiera del core.
+
+Lo que aprendi: Cambié el enfoque de borrado por el método recomendado por el 
+profesor de marcar registros inactivos para conservar el historial.  
+
+
+Fix: WHERE customer_id = 'c13c7f99-...';
+
+-- Las cuentas asociadas cesan actividad cambiándose equivalentemente en la base:
+UPDATE core.accounts 
+SET is_active = false, updated_at = CURRENT_TIMESTAMP 
+WHERE customer_id = 'c13c7f99-...';
+```
+
+* Al conservarse las celdas en el disco duro transaccional resguardo tras `is_active = false`, ni un solo reporte histórico analítico contable sufrirá pérdidas computacionales transaccionales ante inspecciones tributario-financieras.
+
+## Common Valid Variations
+
+* Sostener o añadir al dictamen que las bajas físicas en caliente o borrados masivos de clientes, además del riesgo auditado, también acarrearían bloqueos intensos transaccionales por concurrencia (`Table`/`Row Exclusive Locks` masivos durante la purga en cascada) sobre el motor OLTP de PostgreSQL en medio de picos laborales operativos diarios.
+
+## Common Mistakes
+
+* Aceptar torpe o resignadamente conceder al equipo de testing el `ON DELETE CASCADE` en las tablas maestras de DDL "solo para ayudarles un poco si prometen usarlo con cuidado". Esto reprobatoria de tajo cualquier evaluación seria ante comités arquitectónicos en el sector financiero corporativo internacional por negligente complicidad en la pérdida potencial del patrimonio documental contable.
+
+* Olvidar mencionar el término industrial exacto "Baja Lógica" o su traducción funcional práctica (como las banderas booleanas `is_active = false` o columnas equivalentes referenciales `deleted_at IS NOT NULL` comunes en ORMs contemporáneos).
