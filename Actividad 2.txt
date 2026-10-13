@@ -1,0 +1,36 @@
+Actividad 2: Diseñando el ERD Base de OmniBank
+
+1.-Dibuja las Entidades base: Crea las tres cajas (Clientes, Cuentas, Transacciones).
+
+Cliente:
+Nombre
+Correo electrónico 
+Número telefónico 
+Fecha de nacimiento 
+Número de identificación fiscal 
+Cuentas: 
+Número de cuenta
+Tipo de moneda 
+Tipo de cuenta 
+Saldo actual 
+Límite de crédito
+Transacción:
+Movimiento de cuenta 
+Saldo enviado 
+Tipo de movimiento 
+Fecha del movimiento 
+
+2.-Define las Llaves Primarias: Asígnale a cada entidad un atributo inventado que sirva como Llave Primaria única (Ej. cliente_id, etc.) y márcalo como (PK).
+
+Correo electrónico_id
+Número de identificación fiscal_id
+Número de cuenta_id
+
+3.-Agrega los atributos del negocio: Lista debajo los atributos que descubrimos en el Día 1 (nombre, saldo, monto, etc.).
+
+4.-Resuelve las Cardinalidades: Analiza la relación entre Clientes y Cuentas: ¿Un cliente tiene una o muchas cuentas? ¿Una cuenta le pertenece a uno o muchos clientes? (Dibuja la línea y agrega la Llave Foránea (FK) en la tabla que corresponde).
+Analiza la relación entre Cuentas y Transacciones: Aquí está el truco. Una transacción implica dos cuentas (la que envía y la que recibe el dinero). ¿Cómo diagramas esto?
+
+Un cliente a muchas cuentas 
+
+Una cuenta a muchas transacciones
