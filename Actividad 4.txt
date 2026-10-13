@@ -1,0 +1,35 @@
+Actividad 4: Asignación de Tipos de Datos Nativos y Enums en OmniBank
+
+1.-Diseña los Tipos Enumerados (ENUMs) del Banco:
+Identifica y escribe las 3 sentencias SQL del tipo CREATE TYPE ... AS ENUM (...) que reemplacen al uso desprotegido de strings para las siguientes categorías transaccionales:
+
+Monedas admitidas por el banco (ej: 'USD', 'EUR', 'MXN').
+
+Create TYPE Transacciones AS ENUM (`USD’,`EUR’,`MXN’);
+
+Tipos de cuentas bancarias (ej: 'CHECKING', 'SAVINGS', 'CREDIT').
+
+Create TYPE Cuenta AS ENUM VARCHAR (`CHECKING’,`SAVINGS’,`CREDIT’);
+
+Tipos de movimiento transaccional (ej: 'DEPOSIT', 'WITHDRAWAL', 'TRANSFER').
+
+Create TYPE Movimien AS ENUM NUMERIC(p,s)/DECIMAL (`DEPOSIT’,`WITHDRAWAL’,`TRANSFER’);
+
+2.-Corrección de Tipos Nativos y Especificación Relacional:
+Para la tabla Cuentas, asigna el tipo de dato físico de PostgreSQL profesional para el saldo (sustituyendo a FLOAT) y la fecha y hora de modificación de la cuenta (incorporando protección de zona horaria mundial).
+
+NUMERIC(p,s)/DECIMAL 
+ P=digital total
+ S=decimales
+TIMESTAMPTZ = fecha de 
+
+Para las tablas Clientes, Cuentas y Transacciones, formaliza en tu documento textual qué tipo exacto asignarás para las Llaves Primarias (PK) y Foráneas (FK) respetando el requerimiento de alta seguridad de identificadores al azar del Día 2.
+
+Cliente: 
+ID_cliente (pk) UUID
+Cuentas: 
+ID_cuenta (pk) UUID
+ID_Cliente (fk) VARCHAR (32)
+Transacciones:
+ID_cliente (fk) VARCHAR (32)
+ID_Transaccion (pk) UUID
