@@ -1,0 +1,10 @@
+Tarea 4: Diseño de Dominios Customizados para Protección Financiera en OmniBank
+
+1.-El Dominio Monetario Bancario:
+
+CREATE DOMAIN monto_financiero AS NUMERIC (15,2) CHECK (VALUÉ >=0)
+
+
+2.-El Dominio de Identificación Fiscal / Cadena No Vacía:
+
+CREATE DOMAIN texto_obligatorio AS VARCHART(100) CHECK (VALUÉ <>’’ AND LENGTH(TRIM (VALUE))>0);
