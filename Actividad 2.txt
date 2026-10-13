@@ -1,0 +1,77 @@
+Actividad 2: Diseñando el ERD Base de OmniBank
+
+1.-Dibuja las Entidades base: Crea las tres cajas (Clientes, Cuentas, Transacciones).
+
+Cliente:
+Nombre
+Correo electrónico 
+Número telefónico 
+Fecha de nacimiento 
+Número de identificación fiscal 
+Cuentas: 
+Número de cuenta
+Tipo de moneda 
+Tipo de cuenta 
+Saldo actual 
+Límite de crédito
+Transacción:
+Movimiento de cuenta 
+Saldo enviado 
+Tipo de movimiento 
+Fecha del movimiento 
+
+2.-Define las Llaves Primarias: Asígnale a cada entidad un atributo inventado que sirva como Llave Primaria única (Ej. cliente_id, etc.) y márcalo como (PK).
+
+Correo electrónico_id
+Número de identificación fiscal_id
+Número de cuenta_id
+
+3.-Agrega los atributos del negocio: Lista debajo los atributos que descubrimos en el Día 1 (nombre, saldo, monto, etc.).
+
+4.-Resuelve las Cardinalidades: Analiza la relación entre Clientes y Cuentas: ¿Un cliente tiene una o muchas cuentas? ¿Una cuenta le pertenece a uno o muchos clientes? (Dibuja la línea y agrega la Llave Foránea (FK) en la tabla que corresponde).
+Analiza la relación entre Cuentas y Transacciones: Aquí está el truco. Una transacción implica dos cuentas (la que envía y la que recibe el dinero). ¿Cómo diagramas esto?
+
+Un cliente a muchas cuentas 
+
+Una cuenta a muchas transacciones
+
+
+Lo que aprendi: Corregí las relaciones entre las cajitas porque el profesor esperaba 
+una estructura más directa entre los movimientos y las cuentas bancarias.
+
+fix: # Day 02 Answer Key — Diseñando el ERD Base de OmniBank
+
+## Expected Result
+El estudiante debe haber diseñado un diagrama ER con tres tablas conectadas correctamente mediante llaves foráneas. Las cardinalidades clave son: 1 Cliente -> Muchas Cuentas. Y la tabla Transacciones debe tener DOS llaves foráneas apuntando a Cuentas.
+
+## Reference Solution
+
+### Esquema de Relaciones:
+
+```text
+[Clientes] 1 ------------ N [Cuentas]
+- cliente_id (PK)             - cuenta_id (PK)
+- nombre                      - cliente_id (FK)
+- correo                      - moneda
+- telefono                    - tipo_cuenta
+- fecha_nacimiento            - saldo_actual
+- tax_id                      - limite_credito
+
+                   (Cuenta Origen)
+[Cuentas] 1 ------------------------- N [Transacciones]
+                                          - transaccion_id (PK)
+                   (Cuenta Destino)       - from_account (FK -> Cuentas)
+[Cuentas] 1 ------------------------- N   - to_account (FK -> Cuentas)
+                                          - monto
+                                          - tipo_transaccion
+                                          - fecha_completada
+```
+
+## Common Valid Variations
+* Usar notación visual (diagramas de draw.io o Lucidchart) en lugar de texto.
+* Nombrar las foráneas de transacciones de otra manera, ej. `cuenta_origen_id`, `cuenta_destino_id`.
+
+## Common Mistakes
+* **Error grave:** Conectar Clientes con Transacciones directamente. Las transacciones no pertenecen a un cliente en el aire, le pertenecen a una Cuenta de un cliente.
+* **Error grave:** Tratar de meter la cuenta destino y origen en la tabla de cuentas, rompiendo la normalización y creando referencias circulares o N:M sin tabla intermedia.
+* Olvidar las Llaves Primarias (PK).
