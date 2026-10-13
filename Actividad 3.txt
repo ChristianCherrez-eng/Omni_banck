@@ -1,0 +1,49 @@
+Actividad 3: Normalizando el Prototipo Monolítico de OmniBank
+
+Paso 1 - Primera Forma Normal (1NF):
+
+Transacción_id
+Cliente_id
+Tax
+Nombre
+Contacto
+Cuenta_numero
+Tipo de moneda
+Saldo actual 
+
+Paso 2 - Segunda y Tercera Forma Normal (2NF y 3NF):
+Responde: en la tabla de transacciones, ¿por qué la información como cliente_tax_id, cliente_nombre, y sucursal_direccion viola la 2NF y 3NF si la llave primaria es transaccion_id?
+
+Porque no cumple adecuadamente el 2NF que va de la mano con 1NF que deben ser datos atómicos 
+
+Separa conceptualmente este monolito en 4 tablas en 3NF: Clientes, Cuentas, Transacciones, y Sucursales.
+Define para cada tabla su Llave Primaria (PK) y asigna las Llaves Foráneas (FK) correctas para preservar todas las relaciones sin duplicar textos redundantes de contacto ni de sucursales.
+
+Cliente: 
+ID_cliente (pk)
+Nombre
+Correo electrónico 
+Número telefónico 
+Fecha de nacimiento 
+Número de identificación 
+Estatus
+
+Cuentas:
+ID_cuenta (pk) 
+Saldo actual
+Número de identificación fiscal (fk)
+Saldo actual 
+
+Transacción:
+ID_cliente (fk)
+Fecha de nacimiento 
+Tipo de movimiento 
+ID_transaccion (pk)
+Tipo de moneda 
+
+Sucursal:
+ID_sucursal (pk)
+Nombre 
+Ciudad 
+Estado
+ID_transacción (fk)
