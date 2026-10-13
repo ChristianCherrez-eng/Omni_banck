@@ -1,0 +1,10 @@
+Tarea 5: Dictamen y Defensa de Políticas de Integridad Referencial en OmniBank
+
+1.-La Catástrofe Empresarial en Producción:
+Habilitar un mandato destructivo como ON DELETE CASCADE en el core bancario representa un peligro existencial e ilegal. Un error humano, un acceso no autorizado o una orden de eliminación accidental de un titular (por ejemplo, al depurar registros transitorios) provocaría una reacción en cadena automatizada que borraría de manera irreversible todas sus cuentas, créditos y transacciones financieras en milisegundos, colapsando la estabilidad operativa de la institución.
+
+2.-El Rastro Fiscal y Auditoría Contable Inalienable:
+Por mandatos de regulación fiscal internacional y auditoría (como SOX o normativas de Hacienda), los registros dentro de tablas financieras como core.transactions jamás deben ser borrados físicamente mediante un comando DELETE. Incluso cuando un cliente cancela formalmente su relación mercantil, la ley exige inmutabilidad contable y un rastro histórico inalterable para respaldar auditorías, trazabilidad de fondos y obligaciones fiscales.
+
+3.-El Estándar de la Baja Lógica (La Alternativa Correcta):
+Ante el cierre de cuentas o la salida de un cliente, el sistema jamás debe alterar ni eliminar filas del histórico. En su lugar, se aplica estrictamente el estándar de baja lógica utilizando el atributo no funcional transaccional previsto en el diseño del DDL: modificar el indicador booleano is_active = false (o marcas de estado cerrado) dentro de las tablas de catálogo, blindando la integridad referencial con ON DELETE RESTRICT y protegiendo cada celda financiera del core.
